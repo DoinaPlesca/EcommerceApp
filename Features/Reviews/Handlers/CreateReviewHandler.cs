@@ -9,10 +9,12 @@ namespace EcommerceApp.Features.Reviews.Handlers;
 public class CreateReviewHandler : IRequestHandler<CreateReviewCommand, string>
 {
     private readonly MongoService _mongo;
+    private readonly RedisCacheService _cache;
 
-    public CreateReviewHandler(MongoService mongo)
+    public CreateReviewHandler(MongoService mongo, RedisCacheService cache)
     {
         _mongo = mongo;
+        _cache = cache;
     }
 
     public async Task<string> Handle(CreateReviewCommand request, CancellationToken cancellationToken)
@@ -23,6 +25,7 @@ public class CreateReviewHandler : IRequestHandler<CreateReviewCommand, string>
         var order = await orders.Find(x => x.Id == request.OrderId && x.BuyerId == request.BuyerId).FirstOrDefaultAsync();
         if (order == null)
             throw new Exception("Invalid order or not authorized.");
+        
 
         var existingReview = await reviews.Find(x => x.OrderId == request.OrderId).FirstOrDefaultAsync();
         if (existingReview != null)
@@ -38,6 +41,11 @@ public class CreateReviewHandler : IRequestHandler<CreateReviewCommand, string>
         };
 
         await reviews.InsertOneAsync(review);
+        
+        // invalidate cache for seller review
+        var cacheKey = $"reviews:seller:{order.SellerId}";
+        await _cache.RemoveAsync(cacheKey);
+        
         return review.Id;
     }
 }

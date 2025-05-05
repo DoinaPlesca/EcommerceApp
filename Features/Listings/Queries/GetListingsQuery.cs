@@ -3,7 +3,7 @@ using EcommerceApp.Models.DTOs;
 using EcommerceApp.Models.Enums;
 using MediatR;
 
-namespace EcommerceApp.Features.Listings.Querie;
+namespace EcommerceApp.Features.Listings.Queries;
 
 public class GetListingsQuery : IRequest<PagedResult<Listing>>
 {

@@ -9,10 +9,12 @@ namespace EcommerceApp.Features.Listings.Handlers;
 public class CreateListingHandler : IRequestHandler<CreateListingCommand, string>
 {
     private readonly MongoService _mongo;
+    private readonly RedisCacheService _cache;
 
-    public CreateListingHandler(MongoService mongo)
+    public CreateListingHandler(MongoService mongo, RedisCacheService cache)
     {
         _mongo = mongo;
+        _cache = cache;
     }
 
     public async Task<string> Handle(CreateListingCommand request, CancellationToken cancellationToken)
@@ -30,6 +32,11 @@ public class CreateListingHandler : IRequestHandler<CreateListingCommand, string
 
         var collection = _mongo.GetCollection<Listing>("Listings");
         await collection.InsertOneAsync(listing);
+        
+        //  invalidate seller listing cache
+        var cacheKey = $"listings:seller:{request.SellerId}";
+        await _cache.RemoveAsync(cacheKey);
+        
         return listing.Id;
     }
 }
