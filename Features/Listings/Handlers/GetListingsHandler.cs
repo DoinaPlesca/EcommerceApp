@@ -10,33 +10,49 @@ namespace EcommerceApp.Features.Listings.Handlers;
 public class GetListingsHandler : IRequestHandler<GetListingsQuery, List<Listing>>
 {
     private readonly MongoService _mongo;
-    private readonly RedisCacheService _cache;
 
-    public GetListingsHandler(MongoService mongo, RedisCacheService cache)
+    public GetListingsHandler(MongoService mongo)
     {
         _mongo = mongo;
-        _cache = cache;
     }
 
     public async Task<List<Listing>> Handle(GetListingsQuery request, CancellationToken cancellationToken)
     {
-        string cacheKey = $"listings:{request.Search}:{request.Category}";
-        var cached = await _cache.GetAsync(cacheKey);
-        if (cached != null)
-            return JsonSerializer.Deserialize<List<Listing>>(cached);
+        var listings = _mongo.GetCollection<Listing>("Listings");
 
         var filter = Builders<Listing>.Filter.Empty;
 
-        if (!string.IsNullOrEmpty(request.Search))
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
             filter &= Builders<Listing>.Filter.Regex("Title", new MongoDB.Bson.BsonRegularExpression(request.Search, "i"));
+        }
 
-        if (!string.IsNullOrEmpty(request.Category))
+        if (!string.IsNullOrWhiteSpace(request.Category))
+        {
             filter &= Builders<Listing>.Filter.Eq("Category", request.Category);
+        }
 
-        var collection = _mongo.GetCollection<Listing>("Listings");
-        var listings = await collection.Find(filter).ToListAsync();
+        var sortField = request.SortBy?.ToLower() switch
+        {
+            "price" => Builders<Listing>.Sort.Ascending(x => x.Price),
+            "createdat" => Builders<Listing>.Sort.Descending(x => x.CreatedAt),
+            _ => Builders<Listing>.Sort.Descending(x => x.CreatedAt) 
+        };
 
-        await _cache.SetAsync(cacheKey, JsonSerializer.Serialize(listings), TimeSpan.FromMinutes(5));
-        return listings;
+        if (request.SortDirection?.ToLower() == "asc")
+        {
+            sortField = request.SortBy?.ToLower() switch
+            {
+                "price" => Builders<Listing>.Sort.Ascending(x => x.Price),
+                "createdat" => Builders<Listing>.Sort.Ascending(x => x.CreatedAt),
+                _ => Builders<Listing>.Sort.Ascending(x => x.CreatedAt)
+            };
+        }
+
+        return await listings.Find(filter)
+            .Sort(sortField)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Limit(request.PageSize)
+            .ToListAsync();
     }
 }
