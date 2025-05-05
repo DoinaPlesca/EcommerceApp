@@ -1,6 +1,7 @@
 using EcommerceApp.Features.Listings.Commands;
 using EcommerceApp.Features.Listings.Querie;
 using EcommerceApp.Models;
+using EcommerceApp.Models.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

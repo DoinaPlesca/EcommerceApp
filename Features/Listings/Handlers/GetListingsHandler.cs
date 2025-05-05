@@ -1,6 +1,7 @@
 using System.Text.Json;
 using EcommerceApp.Features.Listings.Querie;
 using EcommerceApp.Models;
+using EcommerceApp.Models.DTOs;
 using EcommerceApp.Services;
 using MediatR;
 using MongoDB.Driver;

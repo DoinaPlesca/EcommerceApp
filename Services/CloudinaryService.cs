@@ -16,25 +16,35 @@ public class CloudinaryService
         _cloudinary = new Cloudinary(account);
     }
 
-    public async Task<string> UploadImageAsync(IFormFile file)
+    public async Task<List<string>> UploadImagesAsync(List<IFormFile> files)
     {
-        if (file == null || file.Length == 0)
-            throw new Exception("No file provided.");
+        var urls = new List<string>();
 
-        var uploadParams = new ImageUploadParams
+        foreach (var file in files)
         {
-            File = new FileDescription(file.FileName, file.OpenReadStream()),
-            Folder = "listings",
-            UseFilename = true,
-            UniqueFilename = true,
-            Overwrite = false
-        };
+            if (file.Length == 0) continue;
 
-        var result = await _cloudinary.UploadAsync(uploadParams);
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(file.FileName, file.OpenReadStream()),
+                Folder = "listings",
+                UseFilename = true,
+                UniqueFilename = true,
+                Overwrite = false
+            };
 
-        if (result.StatusCode == System.Net.HttpStatusCode.OK)
-            return result.SecureUrl.ToString();
+            var result = await _cloudinary.UploadAsync(uploadParams);
 
-        throw new Exception("Cloudinary upload failed.");
+            if (result.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                urls.Add(result.SecureUrl.ToString());
+            }
+            else
+            {
+                throw new Exception($"Failed to upload file: {file.FileName}");
+            }
+        }
+
+        return urls;
     }
 }

@@ -1,3 +1,5 @@
+using EcommerceApp.Models;
+using EcommerceApp.Models.DTOs;
 using EcommerceApp.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,16 +17,21 @@ public class UploadController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Upload([FromForm] IFormFile file)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Upload([FromForm] FileUploadRequest request)
     {
+        if (request.Files == null || request.Files.Count == 0)
+            return BadRequest(ApiResponse<List<string>>.Fail("No files provided."));
+
         try
         {
-            var url = await _cloudinary.UploadImageAsync(file);
-            return Ok(new { url });
+            var urls = await _cloudinary.UploadImagesAsync(request.Files);
+            return Ok(ApiResponse<List<string>>.SuccessResponse(urls, "Files uploaded."));
         }
         catch (Exception ex)
         {
-            return BadRequest(new { error = ex.Message });
+            return BadRequest(ApiResponse<List<string>>.Fail(ex.Message));
         }
     }
+
 }

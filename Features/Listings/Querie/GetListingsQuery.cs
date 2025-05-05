@@ -1,4 +1,5 @@
 using EcommerceApp.Models;
+using EcommerceApp.Models.DTOs;
 using EcommerceApp.Models.Enums;
 using MediatR;
 

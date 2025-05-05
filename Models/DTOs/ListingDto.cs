@@ -1,4 +1,4 @@
-namespace EcommerceApp.Models;
+namespace EcommerceApp.Models.DTOs;
 
 public class ListingDto
 {

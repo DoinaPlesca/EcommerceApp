@@ -17,8 +17,12 @@ builder.Services.Configure<CloudinarySettings>(
     builder.Configuration.GetSection("Cloudinary"));
 builder.Services.AddSingleton<CloudinaryService>();
 
-builder.Services.AddControllers().AddFluentValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services
+    .AddFluentValidationAutoValidation()
+    .AddFluentValidationClientsideAdapters();
+
+builder.Services.AddControllers();
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
