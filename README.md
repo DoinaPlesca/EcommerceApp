@@ -203,7 +203,7 @@ We implemented **Redis** caching using the StackExchange.Redis library.
 - When a review is added, we invalidate `reviews:seller:*`.
 
 **Why Redis?**
-  Redis is chosen for its in-memory speed and ease of use. We cache frequently accessed data (like listings and users) to reduce database load and improve response times. We manually control invalidation to avoid stale data issues.
+Redis is chosen for its in-memory speed and ease of use. We cache frequently accessed data (like listings and users) to reduce database load and improve response times. We manually control invalidation to avoid stale data issues.
 ---
 
 ### 5️⃣ CQRS Implementation (MediatR)
