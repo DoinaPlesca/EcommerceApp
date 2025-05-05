@@ -1,3 +1,4 @@
+using EcommerceApp.Models.Enums;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -14,5 +15,7 @@ public class Order
     public string SellerId { get; set; }
     public decimal TotalPrice { get; set; }
     public DateTime OrderedAt { get; set; } = DateTime.UtcNow;
-    public string Status { get; set; } = "Pending"; 
+
+    [BsonRepresentation(BsonType.String)]
+    public OrderStatus Status { get; set; } = OrderStatus.Pending;
 }

@@ -1,5 +1,7 @@
 using EcommerceApp.Configuration;
 using EcommerceApp.Services;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using MediatR;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,7 +17,9 @@ builder.Services.Configure<CloudinarySettings>(
     builder.Configuration.GetSection("Cloudinary"));
 builder.Services.AddSingleton<CloudinaryService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddFluentValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
