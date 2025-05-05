@@ -1,4 +1,5 @@
 using EcommerceApp.Features.Listings.Querie;
+using EcommerceApp.Shared.Constants;
 using FluentValidation;
 
 namespace EcommerceApp.Features.Listings.Validators;
@@ -28,13 +29,12 @@ public class GetListingsQueryValidator : AbstractValidator<GetListingsQuery>
             .WithMessage("SortDirection must be 'asc' or 'desc'.");
 
         RuleFor(x => x.SortBy)
-            .Must(field => string.IsNullOrEmpty(field) || new[] { "price", "createdat" }.Contains(field.ToLower()))
-            .WithMessage("SortBy must be 'price' or 'createdAt'.");
+            .Must(field => string.IsNullOrEmpty(field) || ListingsConstants.AllowedSortFields.Contains(field.ToLower()))
+            .WithMessage($"SortBy must be one of: {string.Join(", ", ListingsConstants.AllowedSortFields)}.");
     }
 
     private bool BeAValidCategory(string category)
     {
-        var allowedCategories = new[] { "Electronics", "Clothing", "Books", "Furniture", "Other" };
-        return allowedCategories.Contains(category);
+        return ListingsConstants.AllowedCategories.Contains(category);
     }
 }
