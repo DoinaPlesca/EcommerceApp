@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: ecommerce-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7
+    container_name: ecommerce-redis
+    ports:
+      - "6379:6379"
+
+  mongo-express:
+    image: mongo-express
+    container_name: ecommerce-mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      CONFIG_MONGODB_SERVER: mongo
+      CONFIG_MONGODB_PORT: 27017
+      CONFIG_BASICAUTH_USERNAME: admin
+      CONFIG_BASICAUTH_PASSWORD: secret123
+    depends_on:
+      - mongo
+
+volumes:
+  mongo_data:
