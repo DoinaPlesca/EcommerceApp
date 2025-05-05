@@ -1,6 +1,6 @@
 using EcommerceApp.Configuration;
+using EcommerceApp.Middleware;
 using EcommerceApp.Services;
-using FluentValidation;
 using FluentValidation.AspNetCore;
 using MediatR;
 using StackExchange.Redis;
@@ -23,6 +23,10 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     ConnectionMultiplexer.Connect(redisHost));
 builder.Services.AddSingleton<RedisCacheService>();
 
+Console.WriteLine($"Connecting to Redis at: {redisHost}");
+Console.WriteLine($"MongoDB connection: {builder.Configuration["MongoSettings:ConnectionString"]}");
+
+
 builder.Services
     .AddFluentValidationAutoValidation()
     .AddFluentValidationClientsideAdapters();
@@ -31,7 +35,11 @@ builder.Services.AddControllers();
 
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "Ecommerce API", Version = "v1" });
+});
+
 
 var app = builder.Build();
 
@@ -42,6 +50,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseHttpsRedirection();
+app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
