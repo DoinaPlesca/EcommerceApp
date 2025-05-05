@@ -7,7 +7,7 @@ using MongoDB.Driver;
 
 namespace EcommerceApp.Features.Listings.Handlers;
 
-public class GetListingsHandler : IRequestHandler<GetListingsQuery, List<Listing>>
+public class GetListingsHandler : IRequestHandler<GetListingsQuery, PagedResult<Listing>>
 {
     private readonly MongoService _mongo;
 
@@ -16,10 +16,9 @@ public class GetListingsHandler : IRequestHandler<GetListingsQuery, List<Listing
         _mongo = mongo;
     }
 
-    public async Task<List<Listing>> Handle(GetListingsQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResult<Listing>> Handle(GetListingsQuery request, CancellationToken cancellationToken)
     {
         var listings = _mongo.GetCollection<Listing>("Listings");
-
         var filter = Builders<Listing>.Filter.Empty;
 
         if (!string.IsNullOrWhiteSpace(request.Search))
@@ -32,11 +31,16 @@ public class GetListingsHandler : IRequestHandler<GetListingsQuery, List<Listing
             filter &= Builders<Listing>.Filter.Eq("Category", request.Category);
         }
 
+        if (request.Status.HasValue)
+        {
+            filter &= Builders<Listing>.Filter.Eq(x => x.Status, request.Status.Value);
+        }
+
         var sortField = request.SortBy?.ToLower() switch
         {
             "price" => Builders<Listing>.Sort.Ascending(x => x.Price),
             "createdat" => Builders<Listing>.Sort.Descending(x => x.CreatedAt),
-            _ => Builders<Listing>.Sort.Descending(x => x.CreatedAt) 
+            _ => Builders<Listing>.Sort.Descending(x => x.CreatedAt)
         };
 
         if (request.SortDirection?.ToLower() == "asc")
@@ -49,10 +53,20 @@ public class GetListingsHandler : IRequestHandler<GetListingsQuery, List<Listing
             };
         }
 
-        return await listings.Find(filter)
+        var total = await listings.CountDocumentsAsync(filter);
+
+        var results = await listings.Find(filter)
             .Sort(sortField)
             .Skip((request.Page - 1) * request.PageSize)
             .Limit(request.PageSize)
             .ToListAsync();
+
+        return new PagedResult<Listing>
+        {
+            Items = results,
+            TotalCount = total,
+            Page = request.Page,
+            PageSize = request.PageSize
+        };
     }
 }

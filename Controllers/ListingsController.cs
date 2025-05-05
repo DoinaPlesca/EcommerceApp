@@ -1,5 +1,6 @@
 using EcommerceApp.Features.Listings.Commands;
 using EcommerceApp.Features.Listings.Querie;
+using EcommerceApp.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,15 +20,48 @@ public class ListingsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateListingCommand command)
     {
-        var id = await _mediator.Send(command);
-        return Ok(new { id });
+        try
+        {
+            var id = await _mediator.Send(command);
+            return Ok(ApiResponse<string>.SuccessResponse(id, "Listing created."));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<string>.Fail(ex.Message));
+        }
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] string? search, [FromQuery] string? category)
+    public async Task<IActionResult> Get([FromQuery] GetListingsQuery query)
     {
-        var query = new GetListingsQuery { Search = search, Category = category };
-        var listings = await _mediator.Send(query);
-        return Ok(listings);
+        try
+        {
+            var result = await _mediator.Send(query);
+            return Ok(ApiResponse<PagedResult<Listing>>.SuccessResponse(result));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<PagedResult<Listing>>.Fail(ex.Message));
+        }
+    }
+
+    [HttpPatch("{id}/status")]
+    public async Task<IActionResult> UpdateStatus(string id, [FromBody] UpdateListingStatusCommand command)
+    {
+        if (id != command.ListingId)
+            return BadRequest("ID in route does not match body.");
+
+        try
+        {
+            var success = await _mediator.Send(command);
+            if (!success)
+                return NotFound(ApiResponse<bool>.Fail("Listing not found or status not updated."));
+
+            return Ok(ApiResponse<bool>.SuccessResponse(true, "Status updated."));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<bool>.Fail(ex.Message));
+        }
     }
 }

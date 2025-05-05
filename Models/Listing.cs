@@ -1,3 +1,4 @@
+using EcommerceApp.Models.Enums;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -17,4 +18,7 @@ public class Listing
     public string Condition { get; set; }
     public List<string> ImageUrls { get; set; } = new();
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    
+    [BsonRepresentation(BsonType.String)]
+    public ListingStatus Status { get; set; } = ListingStatus.Available;
 }

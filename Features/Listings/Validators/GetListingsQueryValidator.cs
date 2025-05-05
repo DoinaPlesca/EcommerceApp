@@ -31,6 +31,12 @@ public class GetListingsQueryValidator : AbstractValidator<GetListingsQuery>
         RuleFor(x => x.SortBy)
             .Must(field => string.IsNullOrEmpty(field) || ListingsConstants.AllowedSortFields.Contains(field.ToLower()))
             .WithMessage($"SortBy must be one of: {string.Join(", ", ListingsConstants.AllowedSortFields)}.");
+        
+        RuleFor(x => x.Status)
+            .IsInEnum()
+            .When(x => x.Status.HasValue)
+            .WithMessage("Invalid listing status.");
+
     }
 
     private bool BeAValidCategory(string category)
