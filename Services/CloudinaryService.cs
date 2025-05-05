@@ -16,14 +16,25 @@ public class CloudinaryService
         _cloudinary = new Cloudinary(account);
     }
 
-    public async Task<string> UploadAsync(IFormFile file)
+    public async Task<string> UploadImageAsync(IFormFile file)
     {
+        if (file == null || file.Length == 0)
+            throw new Exception("No file provided.");
+
         var uploadParams = new ImageUploadParams
         {
             File = new FileDescription(file.FileName, file.OpenReadStream()),
-            Folder = "listings"
+            Folder = "listings",
+            UseFilename = true,
+            UniqueFilename = true,
+            Overwrite = false
         };
+
         var result = await _cloudinary.UploadAsync(uploadParams);
-        return result.SecureUrl.ToString();
+
+        if (result.StatusCode == System.Net.HttpStatusCode.OK)
+            return result.SecureUrl.ToString();
+
+        throw new Exception("Cloudinary upload failed.");
     }
 }
