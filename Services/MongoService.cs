@@ -1,4 +1,4 @@
-using EcommerceApp.Models;
+using EcommerceApp.Configuration;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
