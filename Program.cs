@@ -3,6 +3,7 @@ using EcommerceApp.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MediatR;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,11 @@ builder.Services.AddMediatR(typeof(Program));
 builder.Services.Configure<CloudinarySettings>(
     builder.Configuration.GetSection("Cloudinary"));
 builder.Services.AddSingleton<CloudinaryService>();
+
+var redisHost = builder.Configuration["Redis:Host"] ?? "localhost:6379";
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+    ConnectionMultiplexer.Connect(redisHost));
+builder.Services.AddSingleton<RedisCacheService>();
 
 builder.Services
     .AddFluentValidationAutoValidation()

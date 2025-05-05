@@ -1,5 +1,5 @@
 using EcommerceApp.Features.Listings.Commands;
-using EcommerceApp.Features.Listings.Querie;
+using EcommerceApp.Features.Listings.Queries;
 using EcommerceApp.Models;
 using EcommerceApp.Models.DTOs;
 using MediatR;
@@ -65,4 +65,24 @@ public class ListingsController : ControllerBase
             return BadRequest(ApiResponse<bool>.Fail(ex.Message));
         }
     }
+    
+    [HttpGet("seller/{sellerId}")]
+    public async Task<IActionResult> GetBySeller(string sellerId)
+    {
+        if (string.IsNullOrWhiteSpace(sellerId))
+            return BadRequest(ApiResponse<List<Listing>>.Fail("SellerId is required."));
+
+        try
+        {
+            var listings = await _mediator.Send(new GetListingsBySellerQuery(sellerId));
+
+            return Ok(ApiResponse<List<Listing>>.SuccessResponse(listings));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ApiResponse<List<Listing>>.Fail("An error occurred: " + ex.Message));
+        }
+    }
+
+
 }

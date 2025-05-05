@@ -1,4 +1,5 @@
-using EcommerceApp.Features.Listings.Querie;
+
+using EcommerceApp.Features.Listings.Queries;
 using EcommerceApp.Shared.Constants;
 using FluentValidation;
 
