@@ -23,10 +23,26 @@ services:
     environment:
       CONFIG_MONGODB_SERVER: mongo
       CONFIG_MONGODB_PORT: 27017
-      CONFIG_BASICAUTH_USERNAME: admin
-      CONFIG_BASICAUTH_PASSWORD: secret123
+      CONFIG_AUTH_USERNAME: admin
+      CONFIG_AUTH_PASSWORD: secret123
     depends_on:
       - mongo
+        
+  ecommerce-api:
+    container_name: ecommerce-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5089:8080"
+    depends_on:
+      - mongo
+      - redis
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      MongoSettings__ConnectionString: mongodb://mongo:27017
+      MongoSettings__Database: ecommerce
+      Redis__Host: redis:6379
 
 volumes:
   mongo_data:

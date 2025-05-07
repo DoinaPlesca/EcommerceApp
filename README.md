@@ -1,4 +1,4 @@
-### 👥 Team Members : Doina Plesca
+###  Team Members : Doina Plesca
 ## 🔗 Public Repository
 
 This project is hosted at: [https://github.com/DoinaPlesca/EcommerceApp](https://github.com/DoinaPlesca/EcommerceApp)

@@ -50,12 +50,10 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-//app.UseHttpsRedirection();
+app.UseSwagger();
+app.UseSwaggerUI();
+
+app.UseHttpsRedirection();
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
