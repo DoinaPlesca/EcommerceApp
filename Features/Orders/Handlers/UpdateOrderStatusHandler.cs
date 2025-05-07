@@ -6,7 +6,7 @@ using MongoDB.Driver;
 
 namespace EcommerceApp.Features.Orders.Handlers;
 
-public class UpdateOrderStatusHandler : IRequestHandler<UpdateOrderStatusCommand, bool>
+public class UpdateOrderStatusHandler : IRequestHandler<UpdateOrderStatusCommand, Order>
 {
     private readonly MongoService _mongo;
 
@@ -15,16 +15,21 @@ public class UpdateOrderStatusHandler : IRequestHandler<UpdateOrderStatusCommand
         _mongo = mongo;
     }
 
-    public async Task<bool> Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
+    public async Task<Order> Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
     {
         var orders = _mongo.GetCollection<Order>("Orders");
 
         var update = Builders<Order>.Update.Set(o => o.Status, request.NewStatus);
-        var result = await orders.UpdateOneAsync(
+       
+        var updatedOrder = await orders.FindOneAndUpdateAsync(
             o => o.Id == request.OrderId,
-            update
+            update,
+            new FindOneAndUpdateOptions<Order>
+            {
+                ReturnDocument = ReturnDocument.After
+            }
         );
 
-        return result.ModifiedCount > 0;
+        return updatedOrder;
     }
 }

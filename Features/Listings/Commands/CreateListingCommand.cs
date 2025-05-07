@@ -1,8 +1,10 @@
+using EcommerceApp.Models;
+using EcommerceApp.Services;
 using MediatR;
 
 namespace EcommerceApp.Features.Listings.Commands;
 
-public class CreateListingCommand : IRequest<string>
+public class CreateListingCommand : IRequest<Listing>
 {
     public string Title { get; set; }
     public string Description { get; set; }

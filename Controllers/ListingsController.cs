@@ -23,8 +23,8 @@ public class ListingsController : ControllerBase
     {
         try
         {
-            var id = await _mediator.Send(command);
-            return Ok(ApiResponse<string>.SuccessResponse(id, "Listing created."));
+            var listing = await _mediator.Send(command);
+            return Ok(ApiResponse<Listing>.SuccessResponse(listing, "Listing created."));
         }
         catch (Exception ex)
         {
@@ -54,15 +54,15 @@ public class ListingsController : ControllerBase
 
         try
         {
-            var success = await _mediator.Send(command);
-            if (!success)
-                return NotFound(ApiResponse<bool>.Fail("Listing not found or status not updated."));
-
-            return Ok(ApiResponse<bool>.SuccessResponse(true, "Status updated."));
+            var updatedListing = await _mediator.Send(command);
+            if (updatedListing == null)
+                return NotFound(ApiResponse<string>.Fail("Listing not found or status not updated."));
+           
+            return Ok(ApiResponse<Listing>.SuccessResponse(updatedListing, "Status updated."));
         }
         catch (Exception ex)
         {
-            return BadRequest(ApiResponse<bool>.Fail(ex.Message));
+            return BadRequest(ApiResponse<string>.Fail(ex.Message));
         }
     }
     

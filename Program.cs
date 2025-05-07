@@ -1,18 +1,24 @@
 using EcommerceApp.Configuration;
+using EcommerceApp.Features.Listings.Commands;
 using EcommerceApp.Middleware;
 using EcommerceApp.Services;
 using FluentValidation.AspNetCore;
 using MediatR;
 using StackExchange.Redis;
+using System.Reflection;
+using MongoDB.Bson;
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddMediatR(typeof(Program).Assembly);
+builder.Services.AddOptions();
 
 // Services
 builder.Services.Configure<MongoSettings>(
     builder.Configuration.GetSection("MongoSettings"));
 builder.Services.AddSingleton<MongoService>();
 
-builder.Services.AddMediatR(typeof(Program));
 
 builder.Services.Configure<CloudinarySettings>(
     builder.Configuration.GetSection("Cloudinary"));
@@ -23,16 +29,17 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     ConnectionMultiplexer.Connect(redisHost));
 builder.Services.AddSingleton<RedisCacheService>();
 
-Console.WriteLine($"Connecting to Redis at: {redisHost}");
-Console.WriteLine($"MongoDB connection: {builder.Configuration["MongoSettings:ConnectionString"]}");
-
-
 builder.Services
     .AddFluentValidationAutoValidation()
     .AddFluentValidationClientsideAdapters();
 
 builder.Services.AddControllers();
 
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -43,13 +50,12 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseAuthorization();
 app.MapControllers();

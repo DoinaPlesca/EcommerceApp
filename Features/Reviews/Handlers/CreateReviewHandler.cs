@@ -6,7 +6,7 @@ using MongoDB.Driver;
 
 namespace EcommerceApp.Features.Reviews.Handlers;
 
-public class CreateReviewHandler : IRequestHandler<CreateReviewCommand, string>
+public class CreateReviewHandler : IRequestHandler<CreateReviewCommand, Review>
 {
     private readonly MongoService _mongo;
     private readonly RedisCacheService _cache;
@@ -17,7 +17,7 @@ public class CreateReviewHandler : IRequestHandler<CreateReviewCommand, string>
         _cache = cache;
     }
 
-    public async Task<string> Handle(CreateReviewCommand request, CancellationToken cancellationToken)
+    public async Task<Review> Handle(CreateReviewCommand request, CancellationToken cancellationToken)
     {
         var orders = _mongo.GetCollection<Order>("Orders");
         var reviews = _mongo.GetCollection<Review>("Reviews");
@@ -46,6 +46,6 @@ public class CreateReviewHandler : IRequestHandler<CreateReviewCommand, string>
         var cacheKey = $"reviews:seller:{order.SellerId}";
         await _cache.RemoveAsync(cacheKey);
         
-        return review.Id;
+        return review;
     }
 }

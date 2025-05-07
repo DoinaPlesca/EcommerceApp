@@ -6,7 +6,7 @@ using MediatR;
 
 namespace EcommerceApp.Features.Listings.Handlers;
 
-public class CreateListingHandler : IRequestHandler<CreateListingCommand, string>
+public class CreateListingHandler : IRequestHandler<CreateListingCommand, Listing>
 {
     private readonly MongoService _mongo;
     private readonly RedisCacheService _cache;
@@ -17,7 +17,7 @@ public class CreateListingHandler : IRequestHandler<CreateListingCommand, string
         _cache = cache;
     }
 
-    public async Task<string> Handle(CreateListingCommand request, CancellationToken cancellationToken)
+    public async Task<Listing> Handle(CreateListingCommand request, CancellationToken cancellationToken)
     {
         var listing = new Listing
         {
@@ -37,6 +37,6 @@ public class CreateListingHandler : IRequestHandler<CreateListingCommand, string
         var cacheKey = $"listings:seller:{request.SellerId}";
         await _cache.RemoveAsync(cacheKey);
         
-        return listing.Id;
+        return listing;
     }
 }

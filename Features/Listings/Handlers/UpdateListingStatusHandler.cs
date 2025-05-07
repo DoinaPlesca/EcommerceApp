@@ -6,7 +6,7 @@ using MongoDB.Driver;
 
 namespace EcommerceApp.Features.Listings.Handlers;
 
-public class UpdateListingStatusHandler : IRequestHandler<UpdateListingStatusCommand, bool>
+public class UpdateListingStatusHandler : IRequestHandler<UpdateListingStatusCommand, Listing>
 {
     private readonly MongoService _mongo;
     private readonly RedisCacheService _cache;
@@ -17,7 +17,7 @@ public class UpdateListingStatusHandler : IRequestHandler<UpdateListingStatusCom
         _cache = cache;
     }
 
-    public async Task<bool> Handle(UpdateListingStatusCommand request, CancellationToken cancellationToken)
+    public async Task<Listing> Handle(UpdateListingStatusCommand request, CancellationToken cancellationToken)
     {
         var listings = _mongo.GetCollection<Listing>("Listings");
         
@@ -36,6 +36,8 @@ public class UpdateListingStatusHandler : IRequestHandler<UpdateListingStatusCom
         
         await _cache.RemoveAsync($"listings:seller:{listing.SellerId}");
         
-        return result.ModifiedCount > 0;
+        var updatedListing = await listings.Find(x => x.Id == request.ListingId).FirstOrDefaultAsync();
+        return updatedListing!;
+
     }
 }

@@ -20,7 +20,7 @@ public class UploadController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Upload([FromForm] FileUploadRequest request)
     {
-        if (request.Files == null || request.Files.Count == 0)
+        if (request.Files.Count == 0)
             return BadRequest(ApiResponse<List<string>>.Fail("No files provided."));
 
         try

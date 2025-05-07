@@ -21,8 +21,8 @@ public class OrdersController : ControllerBase
     {
         try
         {
-            var id = await _mediator.Send(command);
-            return Ok(ApiResponse<string>.SuccessResponse(id, "Order placed."));
+            var order = await _mediator.Send(command);
+            return Ok(ApiResponse<Order>.SuccessResponse(order, "Order placed."));
         }
         catch (Exception ex)
         {
@@ -34,15 +34,16 @@ public class OrdersController : ControllerBase
     public async Task<IActionResult> UpdateStatus(string id, [FromBody] UpdateOrderStatusCommand command)
     {
         if (id != command.OrderId)
-            return BadRequest(ApiResponse<bool>.Fail("ID in URL and body must match."));
+            return BadRequest(ApiResponse<string>.Fail("ID in URL and body must match."));
 
         try
         {
-            var success = await _mediator.Send(command);
-            if (!success)
-                return NotFound(ApiResponse<bool>.Fail("Order not found or not updated."));
+            var updatedOrder = await _mediator.Send(command);
+            
+            if (updatedOrder == null)
+                return NotFound(ApiResponse<string>.Fail("Order not found or not updated."));
 
-            return Ok(ApiResponse<bool>.SuccessResponse(true, "Order status updated."));
+            return Ok(ApiResponse<Order>.SuccessResponse(updatedOrder, "Order status updated."));
         }
         catch (Exception ex)
         {

@@ -7,7 +7,7 @@ using MongoDB.Driver;
 
 namespace EcommerceApp.Features.Orders.Handlers;
 
-public class PlaceOrderHandler : IRequestHandler<PlaceOrderCommand, string>
+public class PlaceOrderHandler : IRequestHandler<PlaceOrderCommand, Order>
 {
     private readonly MongoService _mongo;
 
@@ -16,7 +16,7 @@ public class PlaceOrderHandler : IRequestHandler<PlaceOrderCommand, string>
         _mongo = mongo;
     }
 
-    public async Task<string> Handle(PlaceOrderCommand request, CancellationToken cancellationToken)
+    public async Task<Order> Handle(PlaceOrderCommand request, CancellationToken cancellationToken)
     {
         var listings = _mongo.GetCollection<Listing>("Listings");
         var orders = _mongo.GetCollection<Order>("Orders");
@@ -39,6 +39,6 @@ public class PlaceOrderHandler : IRequestHandler<PlaceOrderCommand, string>
         };
 
         await orders.InsertOneAsync(order);
-        return order.Id;
+        return order;
     }
 }

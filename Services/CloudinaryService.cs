@@ -22,26 +22,35 @@ public class CloudinaryService
 
         foreach (var file in files)
         {
-            if (file.Length == 0) continue;
+            if (file.Length == 0)
+                continue;
 
-            var uploadParams = new ImageUploadParams
+            try
             {
-                File = new FileDescription(file.FileName, file.OpenReadStream()),
-                Folder = "listings",
-                UseFilename = true,
-                UniqueFilename = true,
-                Overwrite = false
-            };
+                var uploadParams = new ImageUploadParams
+                {
+                    File = new FileDescription(file.FileName, file.OpenReadStream()),
+                    Folder = "listings",
+                    UseFilename = true,
+                    UniqueFilename = true,
+                    Overwrite = false
+                };
 
-            var result = await _cloudinary.UploadAsync(uploadParams);
+                var result = await _cloudinary.UploadAsync(uploadParams);
 
-            if (result.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                urls.Add(result.SecureUrl.ToString());
+                if (result.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    urls.Add(result.SecureUrl.ToString());
+                }
+                else
+                {
+                    var error = result.Error?.Message ?? "Unknown error";
+                    throw new Exception($"Upload failed for '{file.FileName}': {error}");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                throw new Exception($"Failed to upload file: {file.FileName}");
+                throw new Exception($"Failed to upload file '{file.FileName}': {ex.Message}");
             }
         }
 

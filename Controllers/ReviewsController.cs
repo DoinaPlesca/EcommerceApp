@@ -22,8 +22,8 @@ public class ReviewsController : ControllerBase
     {
         try
         {
-            var id = await _mediator.Send(command);
-            return Ok(ApiResponse<string>.SuccessResponse(id, "Review submitted."));
+            var review = await _mediator.Send(command);
+            return Ok(ApiResponse<Review>.SuccessResponse(review, "Review submitted."));
         }
         catch (Exception ex)
         {
