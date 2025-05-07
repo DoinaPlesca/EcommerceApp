@@ -237,16 +237,30 @@ Each handler implements `IRequestHandler<TRequest, TResponse>` and is validated 
 
 ### 6️⃣ Transaction Management
 
-We ensure transactional safety by:
+We ensure transactional safety by combining **strict business rule validation** with **MongoDB’s atomic single-document writes**.
 
-- **Checking business rules** before writes:
-    - Prevent duplicate reviews
-    - Prevent ordering already-sold items
-- **Manual rollback logic** is avoided by always validating first
+#### Where We Ensure Consistency
 
-**Why no multi-document transactions?**
+| Operation               | Handler                          | Logic Ensured                                                                 |
+|------------------------|----------------------------------|-------------------------------------------------------------------------------|
+| **Place Order**        | `PlaceOrderHandler.cs`           | Validates listing exists and hasn't been ordered. Prevents duplicate orders. |
+| **Update Listing**     | `UpdateListingStatusHandler.cs`  | Ensures listing exists and updates its status atomically.                    |
+| **Create Review**      | `CreateReviewHandler.cs`         | Confirms order ownership and enforces one-review-per-order constraint.       |
 
-MongoDB writes to single documents are atomic by default. Since each operation (e.g., placing an order) affects only one document, we avoid the complexity of full transactions. Instead, we ensure data consistency through strict validation before each write.
+####  How We Enforce Transactional Safety
+
+-  *Business rules are validated before database writes*
+- *Invalid operations are rejected early*
+-  *Only one document is updated per operation*
+- *No need for manual rollback logic*
+
+This approach keeps the application **fast, safe, and predictable**, while still maintaining full data integrity.
+
+####  Why No Multi-Document Transactions?
+
+MongoDB saves one document at a time completely, so our operations stay safe and consistent without needing complex multi-document transactions.
+
+> **Note:** If in the future we need to update multiple documents (e.g., reserve a listing and create an order simultaneously), we can implement MongoDB’s native multi-document transactions using `StartSession()` and `StartTransaction()`.
 
 ---
 ## 🧾 API Response Format
